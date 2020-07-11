@@ -17,12 +17,25 @@ class ReferencedTypesListenerTest {
 
 	@Test
 	void testImports() {
-		Parsers.parse("/ImportTestClass.java", underTest);
+		Parsers.parse("/Imports.java", underTest);
 
 		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
 				"foo.A",
 				"foo.B",
-				"foo.C"
+				"foo.C",
+				"foo.C.Inner"
+		);
+	}
+
+	@Test
+	void testMethodReferences() {
+		Parsers.parse("/MethodReferences.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"foo.A",
+				"bar.B",
+				"foo.C",
+				"bar.D"
 		);
 	}
 }

@@ -5,7 +5,8 @@ import static foo.B.xxx;
 import static foo.B.yyy;
 
 import foo.C;
+import foo.C.Inner;
 
 
-public class ImportTestClass {
+public class Imports {
 }
