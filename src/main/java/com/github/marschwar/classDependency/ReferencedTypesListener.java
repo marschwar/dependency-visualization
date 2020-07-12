@@ -5,6 +5,7 @@ import com.github.marschwar.classDependency.parser.JavaParser.ClassOrInterfaceTy
 import com.github.marschwar.classDependency.parser.JavaParser.CreatedNameContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ExpressionContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ImportDeclarationContext;
+import com.github.marschwar.classDependency.parser.JavaParser.LocalVariableDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParser.MethodCallContext;
 import com.github.marschwar.classDependency.parser.JavaParser.PackageDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParser.TypeTypeContext;
@@ -213,8 +214,31 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	}
 
 	@Override
+	public void enterMethodCall(MethodCallContext ctx) {
+		final ExpressionContext parent = (ExpressionContext) ctx.getParent();
+		final ReferencedType referencedTypeOrNull = toReferencedTypeOrNull(parent);
+		if (referencedTypeOrNull != null) {
+			types.add(referencedTypeOrNull);
+		}
+	}
+
+	@Override
 	public void enterExpression(ExpressionContext ctx) {
 		final TypeTypeContext typeType = ctx.typeType();
+		onTypeType(typeType);
+	}
+
+	@Override
+	public void enterFieldDeclaration(JavaParser.FieldDeclarationContext ctx) {
+		onTypeType(ctx.typeType());
+	}
+
+	@Override
+	public void enterLocalVariableDeclaration(LocalVariableDeclarationContext ctx) {
+		onTypeType(ctx.typeType());
+	}
+
+	private void onTypeType(TypeTypeContext typeType) {
 		if (typeType == null) {
 			return;
 		}
@@ -225,15 +249,6 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		final ReferencedType typeOrNull = toReferencedTypeOrNull(classOrInterfaceType.IDENTIFIER());
 		if (typeOrNull != null) {
 			types.add(typeOrNull);
-		}
-	}
-
-	@Override
-	public void enterMethodCall(MethodCallContext ctx) {
-		final ExpressionContext parent = (ExpressionContext) ctx.getParent();
-		final ReferencedType referencedTypeOrNull = toReferencedTypeOrNull(parent);
-		if (referencedTypeOrNull != null) {
-			types.add(referencedTypeOrNull);
 		}
 	}
 

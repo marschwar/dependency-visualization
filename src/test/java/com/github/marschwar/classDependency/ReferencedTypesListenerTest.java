@@ -34,7 +34,8 @@ class ReferencedTypesListenerTest {
 				"foo.A",
 				"bar.B",
 				"foo.C",
-				"bar.D"
+				"bar.D",
+				"java.lang.Object"
 		);
 	}
 
@@ -46,7 +47,8 @@ class ReferencedTypesListenerTest {
 				"foo.A",
 				"bar.B",
 				"foo.C",
-				"foo.bar.D"
+				"foo.bar.D",
+				"java.lang.String"
 		);
 	}
 
@@ -85,6 +87,19 @@ class ReferencedTypesListenerTest {
 				"java.lang.Runnable",
 				"java.util.Arrays",
 				"java.util.List"
+		);
+	}
+
+	@Test
+	void testFieldsAndVariables() {
+		Parsers.parse("/FieldsAndVariables.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"foo.A",
+				"foo.B",
+				"bar.C",
+				"java.lang.Integer",
+				"java.lang.String"
 		);
 	}
 }
