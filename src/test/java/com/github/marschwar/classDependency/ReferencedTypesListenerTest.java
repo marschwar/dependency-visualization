@@ -22,8 +22,7 @@ class ReferencedTypesListenerTest {
 		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
 				"foo.A",
 				"foo.B",
-				"foo.C",
-				"foo.C.Inner"
+				"foo.C"
 		);
 	}
 
@@ -36,6 +35,17 @@ class ReferencedTypesListenerTest {
 				"bar.B",
 				"foo.C",
 				"bar.D"
+		);
+	}
+
+	@Test
+	void testCreators() {
+		Parsers.parse("/Creators.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"foo.A",
+				"bar.B",
+				"foo.C"
 		);
 	}
 }

@@ -8,6 +8,7 @@ plugins {
     id 'java'
     id 'antlr'
     id "com.github.johnrengelman.shadow" version "5.1.0"
+    id "io.freefair.lombok" version "5.1.0"
 }
 
 group 'com.github.marschwar.classDependency'

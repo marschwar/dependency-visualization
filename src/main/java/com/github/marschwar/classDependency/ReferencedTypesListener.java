@@ -1,29 +1,32 @@
 package com.github.marschwar.classDependency;
 
 import com.github.marschwar.classDependency.parser.JavaParser;
-import com.github.marschwar.classDependency.parser.JavaParser.CreatorContext;
+import com.github.marschwar.classDependency.parser.JavaParser.CreatedNameContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ExpressionContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ImportDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParser.MethodCallContext;
 import com.github.marschwar.classDependency.parser.JavaParser.PackageDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParserBaseListener;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class ReferencedTypesListener extends JavaParserBaseListener {
 
-	private String packageName;
+	public static final String DOT = ".";
+	private PackageDeclaration packageName;
 
-	private final Set<String> types = new HashSet<>();
+	private final Set<ReferencedType> types = new HashSet<>();
 	private final Stack<Set<String>> variables = new Stack<>();
 
 	@Override
 	public void enterPackageDeclaration(PackageDeclarationContext ctx) {
-		packageName = ctx.qualifiedName().getText();
+		packageName = new PackageDeclaration(ctx.qualifiedName().getText());
 	}
 
 	@Override
@@ -48,20 +51,19 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	@Override
 	public void enterImportDeclaration(ImportDeclarationContext ctx) {
-		String type = ctx.qualifiedName().getText();
+		List<TerminalNode> nodes = ctx.qualifiedName().IDENTIFIER();
 		if (ctx.STATIC() != null && ctx.MUL() == null) {
 			// remove method name in static method import
-			type = type.substring(0, type.lastIndexOf("."));
+			nodes = nodes.subList(0, nodes.size() - 1);
 		}
-		types.add(type);
+		types.add(toReferencedType(nodes));
 	}
 
 	@Override
-	public void enterCreator(CreatorContext ctx) {
-		final String createdName = ctx.createdName().getText();
-
-		types.add(createdName);
+	public void enterCreatedName(CreatedNameContext ctx) {
+		types.add(toReferencedType(ctx.IDENTIFIER()));
 	}
+
 
 	@Override
 	public void enterMethodCall(MethodCallContext ctx) {
@@ -88,16 +90,55 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 			return;
 		}
 		if (expression.getChildCount() == 1) {
-			receiver = packageName + "." + receiver;
+			types.add(ReferencedType.of(packageName, receiver));
+		} else {
+			// TODO: there must be a better way
+			final int lastDot = receiver.lastIndexOf(DOT);
+			types.add(ReferencedType.of(
+					receiver.substring(0, lastDot),
+					receiver.substring(lastDot + 1)
+			));
 		}
-		types.add(receiver);
 	}
 
 	private boolean isVariable(String name) {
 		return variables.stream().anyMatch(variablesInBlock -> variablesInBlock.contains(name));
 	}
 
+	private ReferencedType toReferencedType(List<TerminalNode> nodes) {
+		if (nodes == null || nodes.isEmpty()) {
+			throw new IllegalArgumentException();
+		}
+		if (nodes.size() == 1) {
+			return ReferencedType.of(packageName, nodes.get(0).getText());
+		}
+		// TODO:
+		final List<String> packageNodes = nodes.stream()
+				.filter(this::startsWithLower)
+				.map(TerminalNode::getText)
+				.collect(Collectors.toList());
+
+		final List<String> typeNodes = nodes.stream()
+				.filter(this::startsWithUpper)
+				.map(TerminalNode::getText)
+				.collect(Collectors.toList());
+
+		final PackageDeclaration thePackageName = (packageNodes.isEmpty())
+				? packageName
+				: new PackageDeclaration(String.join(DOT, packageNodes));
+
+		return ReferencedType.of(thePackageName, typeNodes.get(0));
+	}
+
+	private boolean startsWithLower(ParseTree hasText) {
+		return Character.isLowerCase(hasText.getText().charAt(0));
+	}
+
+	private boolean startsWithUpper(ParseTree hasText) {
+		return Character.isUpperCase(hasText.getText().charAt(0));
+	}
+
 	public Set<String> getTypes() {
-		return Collections.unmodifiableSet(types);
+		return types.stream().map(ReferencedType::toQualifiedName).collect(Collectors.toSet());
 	}
 }
