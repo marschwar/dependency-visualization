@@ -1,5 +1,7 @@
 package foo;
 
+import java.util.function.Supplier;
+
 public class Creators {
 
 	public void m() {
@@ -7,6 +9,7 @@ public class Creators {
 		new bar.B();
 		new C.Inner();
 
-		// C::new
+		Supplier s1 = D::new;
+		Supplier s2 = bar.E::new;
 	}
 }

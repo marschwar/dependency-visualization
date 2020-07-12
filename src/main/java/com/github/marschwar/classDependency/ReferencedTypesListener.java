@@ -1,11 +1,13 @@
 package com.github.marschwar.classDependency;
 
 import com.github.marschwar.classDependency.parser.JavaParser;
+import com.github.marschwar.classDependency.parser.JavaParser.ClassOrInterfaceTypeContext;
 import com.github.marschwar.classDependency.parser.JavaParser.CreatedNameContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ExpressionContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ImportDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParser.MethodCallContext;
 import com.github.marschwar.classDependency.parser.JavaParser.PackageDeclarationContext;
+import com.github.marschwar.classDependency.parser.JavaParser.TypeTypeContext;
 import com.github.marschwar.classDependency.parser.JavaParserBaseListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -61,9 +63,24 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	@Override
 	public void enterCreatedName(CreatedNameContext ctx) {
+		if (ctx.primitiveType() != null) {
+			return;
+		}
 		types.add(toReferencedType(ctx.IDENTIFIER()));
 	}
 
+	@Override
+	public void enterExpression(ExpressionContext ctx) {
+		final TypeTypeContext typeType = ctx.typeType();
+		if (typeType == null) {
+			return;
+		}
+		final ClassOrInterfaceTypeContext classOrInterfaceType = typeType.classOrInterfaceType();
+		if (classOrInterfaceType == null) {
+			return;
+		}
+		types.add(toReferencedType(classOrInterfaceType.IDENTIFIER()));
+	}
 
 	@Override
 	public void enterMethodCall(MethodCallContext ctx) {

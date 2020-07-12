@@ -43,9 +43,12 @@ class ReferencedTypesListenerTest {
 		Parsers.parse("/Creators.java", underTest);
 
 		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"java.util.function.Supplier",
 				"foo.A",
 				"bar.B",
-				"foo.C"
+				"foo.C",
+				"foo.D",
+				"bar.E"
 		);
 	}
 }
