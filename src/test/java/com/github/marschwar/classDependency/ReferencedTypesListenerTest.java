@@ -75,4 +75,16 @@ class ReferencedTypesListenerTest {
 				"java.lang.String"
 		);
 	}
+
+	@Test
+	void testImportedTypes() {
+		Parsers.parse("/ImportedTypes.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"bar.A",
+				"java.lang.Runnable",
+				"java.util.Arrays",
+				"java.util.List"
+		);
+	}
 }

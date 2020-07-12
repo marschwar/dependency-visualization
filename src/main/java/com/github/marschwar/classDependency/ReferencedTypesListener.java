@@ -148,6 +148,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	private final Set<ReferencedType> types = new HashSet<>();
 	private final Stack<Set<String>> variables = new Stack<>();
+	private final Set<ReferencedType> imports = new HashSet<>();
 
 	@Override
 	public void enterPackageDeclaration(PackageDeclarationContext ctx) {
@@ -181,7 +182,11 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 			// remove method name in static method import
 			nodes = nodes.subList(0, nodes.size() - 1);
 		}
-		types.add(toReferencedTypeOrNull(nodes));
+		final ReferencedType typeOrNull = toReferencedTypeOrNull(nodes);
+		if (typeOrNull != null) {
+			types.add(typeOrNull);
+			imports.add(typeOrNull);
+		}
 	}
 
 	@Override
@@ -234,6 +239,10 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	private boolean isVariable(String name) {
 		return variables.stream().anyMatch(variablesInBlock -> variablesInBlock.contains(name));
+	}
+
+	private boolean isImported(String name) {
+		return imports.stream().anyMatch(anImport -> anImport.getName().equals(name));
 	}
 
 	private boolean isJavaLangType(String name) {
@@ -321,6 +330,9 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	private ReferencedType toReferencedTypeOrNull(TerminalNode node) {
 		final String typeNameCandidate = node.getText();
+		if (isImported(typeNameCandidate)) {
+			return null;
+		}
 		return (isJavaLangType(typeNameCandidate))
 				? ReferencedType.of(JAVA_LANG_PACKAGE, typeNameCandidate)
 				: ReferencedType.of(packageName, typeNameCandidate);
