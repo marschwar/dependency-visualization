@@ -56,6 +56,7 @@ class ReferencedTypesListenerTest {
 
 		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
 				"java.util.function.Supplier",
+				"java.lang.String",
 				"foo.A",
 				"bar.B",
 				"foo.C",
@@ -65,11 +66,13 @@ class ReferencedTypesListenerTest {
 	}
 
 	@Test
-	void ignoreJavaLangTypes() {
+	void testJavaLangTypes() {
 		Parsers.parse("/JavaLang.java", underTest);
 
 		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
-				"foo.A"
+				"foo.A",
+				"java.lang.Object",
+				"java.lang.String"
 		);
 	}
 }

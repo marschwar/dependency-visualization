@@ -11,5 +11,6 @@ public class Creators {
 
 		Supplier s1 = D::new;
 		Supplier s2 = bar.E::new;
+		Supplier s3 = String::new;
 	}
 }

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	private static final String DOT = ".";
+	private static final PackageDeclaration JAVA_LANG_PACKAGE = new PackageDeclaration("java.lang");
 
 	private static final List<String> JAVA_LANG_TYPES = Arrays.asList("AbstractMethodError",
 			"AbstractStringBuilder",
@@ -320,12 +321,10 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	private ReferencedType toReferencedTypeOrNull(TerminalNode node) {
 		final String typeNameCandidate = node.getText();
-		if (isJavaLangType(typeNameCandidate)) {
-			return null;
-		}
-		return ReferencedType.of(packageName, typeNameCandidate);
+		return (isJavaLangType(typeNameCandidate))
+				? ReferencedType.of(JAVA_LANG_PACKAGE, typeNameCandidate)
+				: ReferencedType.of(packageName, typeNameCandidate);
 	}
-
 
 	public Set<String> getTypes() {
 		return types.stream().map(ReferencedType::toQualifiedName).collect(Collectors.toSet());
