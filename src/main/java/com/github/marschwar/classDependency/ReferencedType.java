@@ -3,11 +3,9 @@ package com.github.marschwar.classDependency;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.function.Supplier;
-
 @Value
 @Builder
-public class ReferencedType {
+public class ReferencedType implements Filterable {
 	PackageDeclaration packageDeclaration;
 	String name;
 
@@ -22,7 +20,7 @@ public class ReferencedType {
 		return ReferencedType.of(new PackageDeclaration(packageName), typeName);
 	}
 
-	public String toQualifiedName() {
+	public String getQualifiedName() {
 		return packageDeclaration.getPackageName() + "." + name;
 	}
 }

@@ -364,6 +364,6 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	}
 
 	public Set<String> getTypes() {
-		return types.stream().map(ReferencedType::toQualifiedName).collect(Collectors.toSet());
+		return types.stream().map(ReferencedType::getQualifiedName).collect(Collectors.toSet());
 	}
 }
