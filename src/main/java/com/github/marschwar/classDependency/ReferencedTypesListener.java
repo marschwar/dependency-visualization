@@ -178,7 +178,12 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	@Override
 	public void enterImportDeclaration(ImportDeclarationContext ctx) {
+		if (ctx.STATIC() == null && ctx.MUL() != null) {
+			// wildcard imports are not supported
+			return;
+		}
 		List<TerminalNode> nodes = ctx.qualifiedName().IDENTIFIER();
+
 		if (ctx.STATIC() != null && ctx.MUL() == null) {
 			// remove method name in static method import
 			nodes = nodes.subList(0, nodes.size() - 1);

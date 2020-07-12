@@ -48,7 +48,6 @@ public class ShipmentService {
 
     public ShipmentService() {
         dataHolder = DataHolder.getInstance();
-        emptyList()
         DeltaApp application = DeltaApp.getInstance();
 
         if (application != null) {
