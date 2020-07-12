@@ -13,6 +13,7 @@ import com.github.marschwar.classDependency.parser.JavaParserBaseListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +22,127 @@ import java.util.stream.Collectors;
 
 public class ReferencedTypesListener extends JavaParserBaseListener {
 
-	public static final String DOT = ".";
+	private static final String DOT = ".";
+
+	private static final List<String> JAVA_LANG_TYPES = Arrays.asList("AbstractMethodError",
+			"AbstractStringBuilder",
+			"Appendable",
+			"ApplicationShutdownHooks",
+			"ArithmeticException",
+			"ArrayIndexOutOfBoundsException",
+			"ArrayStoreException",
+			"AssertionError",
+			"AssertionStatusDirectives",
+			"AutoCloseable",
+			"Boolean",
+			"BootstrapMethodError",
+			"Byte",
+			"Character",
+			"CharacterData",
+			"CharacterData0E",
+			"CharacterData00",
+			"CharacterData01",
+			"CharacterData02",
+			"CharacterDataLatin1",
+			"CharacterDataPrivateUse",
+			"CharacterDataUndefined",
+			"CharacterName",
+			"CharSequence",
+			"Class",
+			"ClassCastException",
+			"ClassCircularityError",
+			"ClassFormatError",
+			"ClassLoader",
+			"ClassLoaderHelper",
+			"ClassNotFoundException",
+			"ClassValue",
+			"Cloneable",
+			"CloneNotSupportedException",
+			"Comparable",
+			"Compiler",
+			"ConditionalSpecialCasing",
+			"Deprecated",
+			"Double",
+			"Enum",
+			"EnumConstantNotPresentException",
+			"Error",
+			"Exception",
+			"ExceptionInInitializerError",
+			"Float",
+			"FunctionalInterface",
+			"IllegalAccessError",
+			"IllegalAccessException",
+			"IllegalArgumentException",
+			"IllegalMonitorStateException",
+			"IllegalStateException",
+			"IllegalThreadStateException",
+			"IncompatibleClassChangeError",
+			"IndexOutOfBoundsException",
+			"InheritableThreadLocal",
+			"InstantiationError",
+			"InstantiationException",
+			"Integer",
+			"InternalError",
+			"InterruptedException",
+			"Iterable",
+			"LinkageError",
+			"Long",
+			"Math",
+			"NegativeArraySizeException",
+			"NoClassDefFoundError",
+			"NoSuchFieldError",
+			"NoSuchFieldException",
+			"NoSuchMethodError",
+			"NoSuchMethodException",
+			"NullPointerException",
+			"Number",
+			"NumberFormatException",
+			"Object",
+			"OutOfMemoryError",
+			"Override",
+			"Package",
+			"Process",
+			"ProcessBuilder",
+			"ProcessEnvironment",
+			"ProcessImpl",
+			"Readable",
+			"ReflectiveOperationException",
+			"Runnable",
+			"Runtime",
+			"RuntimeException",
+			"RuntimePermission",
+			"SafeVarargs",
+			"SecurityException",
+			"SecurityManager",
+			"Short",
+			"Shutdown",
+			"StackOverflowError",
+			"StackTraceElement",
+			"StrictMath",
+			"String",
+			"StringBuffer",
+			"StringBuilder",
+			"StringCoding",
+			"StringIndexOutOfBoundsException",
+			"SuppressWarnings",
+			"System",
+			"SystemClassLoaderAction",
+			"Terminator",
+			"Thread",
+			"ThreadDeath",
+			"ThreadGroup",
+			"ThreadLocal",
+			"Throwable",
+			"TypeNotPresentException",
+			"UNIXProcess",
+			"UnknownError",
+			"UnsatisfiedLinkError",
+			"UnsupportedClassVersionError",
+			"UnsupportedOperationException",
+			"VerifyError",
+			"VirtualMachineError",
+			"Void");
+
 	private PackageDeclaration packageName;
 
 	private final Set<ReferencedType> types = new HashSet<>();
@@ -59,7 +180,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 			// remove method name in static method import
 			nodes = nodes.subList(0, nodes.size() - 1);
 		}
-		types.add(toReferencedType(nodes));
+		types.add(toReferencedTypeOrNull(nodes));
 	}
 
 	@Override
@@ -67,7 +188,10 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		if (ctx.primitiveType() != null) {
 			return;
 		}
-		types.add(toReferencedType(ctx.IDENTIFIER()));
+		final ReferencedType typeOrNull = toReferencedTypeOrNull(ctx.IDENTIFIER());
+		if (typeOrNull != null) {
+			types.add(typeOrNull);
+		}
 	}
 
 	@Override
@@ -92,7 +216,10 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		if (classOrInterfaceType == null) {
 			return;
 		}
-		types.add(toReferencedType(classOrInterfaceType.IDENTIFIER()));
+		final ReferencedType typeOrNull = toReferencedTypeOrNull(classOrInterfaceType.IDENTIFIER());
+		if (typeOrNull != null) {
+			types.add(typeOrNull);
+		}
 	}
 
 	@Override
@@ -108,6 +235,10 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		return variables.stream().anyMatch(variablesInBlock -> variablesInBlock.contains(name));
 	}
 
+	private boolean isJavaLangType(String name) {
+		return JAVA_LANG_TYPES.stream().anyMatch(type -> type.equals(name));
+	}
+
 	private ReferencedType toReferencedTypeOrNull(ExpressionContext ctx) {
 		final List<ExpressionContext> expressions = ctx.expression();
 		final TerminalNode typeOrPackageOrNull = typeOrPackageOrNull(ctx);
@@ -117,7 +248,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	private ReferencedType toReferencedTypeOrNull(List<ExpressionContext> expressions, TerminalNode typeCandidate) {
 		if (expressions.isEmpty()) {
 			if (typeCandidate != null) {
-				return ReferencedType.of(packageName, typeCandidate.getText());
+				return toReferencedTypeOrNull(typeCandidate);
 			}
 			return null;
 		}
@@ -128,7 +259,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		if (typeOrPackageOrNull == null) {
 			return (typeCandidate == null)
 					? toReferencedTypeOrNull(firstExpression.expression(), null)
-					: ReferencedType.of(packageName, typeCandidate.getText());
+					: toReferencedTypeOrNull(typeCandidate);
 
 		}
 		if (startsWithUpper(typeOrPackageOrNull)) {
@@ -154,12 +285,12 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		return null;
 	}
 
-	private ReferencedType toReferencedType(List<TerminalNode> nodes) {
+	private ReferencedType toReferencedTypeOrNull(List<TerminalNode> nodes) {
 		if (nodes == null || nodes.isEmpty()) {
 			throw new IllegalArgumentException();
 		}
 		if (nodes.size() == 1) {
-			return ReferencedType.of(packageName, nodes.get(0).getText());
+			return toReferencedTypeOrNull(nodes.get(0));
 		}
 		// TODO:
 		final List<String> packageNodes = nodes.stream()
@@ -186,6 +317,15 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	private boolean startsWithUpper(ParseTree hasText) {
 		return Character.isUpperCase(hasText.getText().charAt(0));
 	}
+
+	private ReferencedType toReferencedTypeOrNull(TerminalNode node) {
+		final String typeNameCandidate = node.getText();
+		if (isJavaLangType(typeNameCandidate)) {
+			return null;
+		}
+		return ReferencedType.of(packageName, typeNameCandidate);
+	}
+
 
 	public Set<String> getTypes() {
 		return types.stream().map(ReferencedType::toQualifiedName).collect(Collectors.toSet());

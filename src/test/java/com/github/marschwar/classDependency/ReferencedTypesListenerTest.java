@@ -63,4 +63,13 @@ class ReferencedTypesListenerTest {
 				"bar.E"
 		);
 	}
+
+	@Test
+	void ignoreJavaLangTypes() {
+		Parsers.parse("/JavaLang.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"foo.A"
+		);
+	}
 }
