@@ -229,8 +229,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	@Override
 	public void enterExpression(ExpressionContext ctx) {
-		final TypeTypeContext typeType = ctx.typeType();
-		onTypeType(typeType);
+		onTypeType(ctx.typeType());
 	}
 
 	@Override
@@ -255,6 +254,12 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		if (typeOrNull != null) {
 			types.add(typeOrNull);
 		}
+		classOrInterfaceType.typeArguments().forEach(argsCtx -> {
+			argsCtx.typeArgument().forEach(typeArgCtx -> {
+				final TypeTypeContext parametrizedTypeType = typeArgCtx.typeType();
+				onTypeType(parametrizedTypeType);
+			});
+		});
 	}
 
 	private boolean isVariable(String name) {

@@ -86,7 +86,8 @@ class ReferencedTypesListenerTest {
 				"bar.A",
 				"java.lang.Runnable",
 				"java.util.Arrays",
-				"java.util.List"
+				"java.util.List",
+				"java.lang.String"
 		);
 	}
 
@@ -100,6 +101,20 @@ class ReferencedTypesListenerTest {
 				"bar.C",
 				"java.lang.Integer",
 				"java.lang.String"
+		);
+	}
+
+	@Test
+	void testParametrized() {
+		Parsers.parse("/ParametrizedTypes.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"foo.A",
+				"bar.B",
+				"java.lang.Integer",
+				"java.lang.String",
+				"java.util.List",
+				"java.util.Map"
 		);
 	}
 }
