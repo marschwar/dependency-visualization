@@ -39,6 +39,18 @@ class ReferencedTypesListenerTest {
 	}
 
 	@Test
+	void testFieldReferences() {
+		Parsers.parse("/FieldReferences.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"foo.A",
+				"bar.B",
+				"foo.C",
+				"foo.bar.D"
+		);
+	}
+
+	@Test
 	void testCreators() {
 		Parsers.parse("/Creators.java", underTest);
 

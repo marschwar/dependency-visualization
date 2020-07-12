@@ -8,6 +8,7 @@ import com.github.marschwar.classDependency.parser.JavaParser.ImportDeclarationC
 import com.github.marschwar.classDependency.parser.JavaParser.MethodCallContext;
 import com.github.marschwar.classDependency.parser.JavaParser.PackageDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParser.TypeTypeContext;
+import com.github.marschwar.classDependency.parser.JavaParser.VariableInitializerContext;
 import com.github.marschwar.classDependency.parser.JavaParserBaseListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -70,6 +71,18 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	}
 
 	@Override
+	public void enterVariableInitializer(VariableInitializerContext ctx) {
+
+		final ExpressionContext expression = ctx.expression();
+		if (expression != null) {
+			final ReferencedType referencedTypeOrNull = toReferencedTypeOrNull(expression);
+			if (referencedTypeOrNull != null) {
+				types.add(referencedTypeOrNull);
+			}
+		}
+	}
+
+	@Override
 	public void enterExpression(ExpressionContext ctx) {
 		final TypeTypeContext typeType = ctx.typeType();
 		if (typeType == null) {
@@ -85,41 +98,60 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	@Override
 	public void enterMethodCall(MethodCallContext ctx) {
 		final ExpressionContext parent = (ExpressionContext) ctx.getParent();
-		final List<ExpressionContext> expressions = parent.expression();
-		if (expressions.size() != 1) {
-			return;
-		}
-
-		final ExpressionContext expression = expressions.get(0);
-		if (expression.creator() != null) {
-			return;
-		}
-		if (expression.methodCall() != null) {
-			return;
-		}
-		if (expression.primary() != null && expression.primary().THIS() != null) {
-			return;
-		}
-
-		String receiver = expression.getText();
-
-		if (isVariable(receiver)) {
-			return;
-		}
-		if (expression.getChildCount() == 1) {
-			types.add(ReferencedType.of(packageName, receiver));
-		} else {
-			// TODO: there must be a better way
-			final int lastDot = receiver.lastIndexOf(DOT);
-			types.add(ReferencedType.of(
-					receiver.substring(0, lastDot),
-					receiver.substring(lastDot + 1)
-			));
+		final ReferencedType referencedTypeOrNull = toReferencedTypeOrNull(parent);
+		if (referencedTypeOrNull != null) {
+			types.add(referencedTypeOrNull);
 		}
 	}
 
 	private boolean isVariable(String name) {
 		return variables.stream().anyMatch(variablesInBlock -> variablesInBlock.contains(name));
+	}
+
+	private ReferencedType toReferencedTypeOrNull(ExpressionContext ctx) {
+		final List<ExpressionContext> expressions = ctx.expression();
+		final TerminalNode typeOrPackageOrNull = typeOrPackageOrNull(ctx);
+		return toReferencedTypeOrNull(expressions, typeOrPackageOrNull);
+	}
+
+	private ReferencedType toReferencedTypeOrNull(List<ExpressionContext> expressions, TerminalNode typeCandidate) {
+		if (expressions.isEmpty()) {
+			if (typeCandidate != null) {
+				return ReferencedType.of(packageName, typeCandidate.getText());
+			}
+			return null;
+		}
+
+		// TODO: multiple?
+		final ExpressionContext firstExpression = expressions.get(0);
+		final TerminalNode typeOrPackageOrNull = typeOrPackageOrNull(firstExpression);
+		if (typeOrPackageOrNull == null) {
+			return (typeCandidate == null)
+					? toReferencedTypeOrNull(firstExpression.expression(), null)
+					: ReferencedType.of(packageName, typeCandidate.getText());
+
+		}
+		if (startsWithUpper(typeOrPackageOrNull)) {
+			return toReferencedTypeOrNull(firstExpression.expression(), typeOrPackageOrNull);
+		}
+		final String packageCandidate = firstExpression.getText();
+		if (isVariable(packageCandidate)) {
+			return null;
+		}
+		if (typeCandidate == null) {
+			return null;
+		}
+		return ReferencedType.of(packageCandidate, typeCandidate.getText());
+	}
+
+	private TerminalNode typeOrPackageOrNull(ExpressionContext ctx) {
+		if (ctx.IDENTIFIER() != null) {
+			return ctx.IDENTIFIER();
+		}
+		if (ctx.primary() != null) {
+			return ctx.primary().IDENTIFIER();
+		}
+		return null;
 	}
 
 	private ReferencedType toReferencedType(List<TerminalNode> nodes) {
