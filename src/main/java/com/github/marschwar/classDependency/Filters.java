@@ -3,6 +3,7 @@ package com.github.marschwar.classDependency;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Filters {
@@ -15,11 +16,17 @@ public class Filters {
 	}
 
 
-	public <T extends Filterable> Collection<T> apply(Collection<T> source) {
+	public <T extends Filterable> Set<T> apply(Collection<T> source) {
 		return source.stream()
-				.filter(item -> includes.isEmpty() || includes.stream().anyMatch(filter -> filter.matches(item)))
-				.filter(item -> excludes.stream().noneMatch(filter -> filter.matches(item)))
+				.filter(this::isIncluded)
 				.collect(Collectors.toSet());
+	}
+
+	public boolean isIncluded(Filterable item) {
+		if (!includes.isEmpty() && includes.stream().noneMatch(filter -> filter.matches(item))) {
+			return false;
+		}
+		return excludes.stream().noneMatch(filter -> filter.matches(item));
 	}
 
 

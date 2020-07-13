@@ -39,7 +39,7 @@ class FiltersTest {
 				new TestFilterable("a.b.X")
 		);
 
-		final Collection<TestFilterable> result = filters.apply(source);
+		final Set<TestFilterable> result = filters.apply(source);
 
 		assertThat(result)
 				.extracting(TestFilterable::getQualifiedName)

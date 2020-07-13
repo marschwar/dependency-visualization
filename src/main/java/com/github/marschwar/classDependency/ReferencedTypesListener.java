@@ -1,10 +1,12 @@
 package com.github.marschwar.classDependency;
 
 import com.github.marschwar.classDependency.parser.JavaParser;
+import com.github.marschwar.classDependency.parser.JavaParser.ClassDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ClassOrInterfaceTypeContext;
 import com.github.marschwar.classDependency.parser.JavaParser.CreatedNameContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ExpressionContext;
 import com.github.marschwar.classDependency.parser.JavaParser.ImportDeclarationContext;
+import com.github.marschwar.classDependency.parser.JavaParser.InterfaceDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParser.LocalVariableDeclarationContext;
 import com.github.marschwar.classDependency.parser.JavaParser.MethodCallContext;
 import com.github.marschwar.classDependency.parser.JavaParser.PackageDeclarationContext;
@@ -20,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.unmodifiableSet;
 
 public class ReferencedTypesListener extends JavaParserBaseListener {
 
@@ -146,6 +150,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 			"Void");
 
 	private PackageDeclaration packageName;
+	private String typeName;
 
 	private final Set<ReferencedType> types = new HashSet<>();
 	private final Stack<Set<String>> variables = new Stack<>();
@@ -157,17 +162,60 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	}
 
 	@Override
-	public void enterClassBody(JavaParser.ClassBodyContext ctx) {
-		variables.push(new HashSet<>());
+	public void enterClassDeclaration(ClassDeclarationContext ctx) {
+		onTypeName(ctx.IDENTIFIER().getText());
+		onVariableContextStart();
+	}
+
+	@Override
+	public void exitClassDeclaration(ClassDeclarationContext ctx) {
+		onVariableContextEnd();
+	}
+
+	@Override
+	public void enterInterfaceDeclaration(InterfaceDeclarationContext ctx) {
+		onTypeName(ctx.IDENTIFIER().getText());
+		onVariableContextStart();
+	}
+
+	@Override
+	public void exitInterfaceDeclaration(InterfaceDeclarationContext ctx) {
+		onVariableContextEnd();
+	}
+
+	@Override
+	public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
+		onTypeName(ctx.IDENTIFIER().getText());
+		onVariableContextStart();
+	}
+
+	@Override
+	public void exitEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
+		onVariableContextEnd();
+	}
+
+	private void onTypeName(String classOrInterfaceName) {
+		if (typeName != null) {
+			return;
+		}
+		typeName = classOrInterfaceName;
 	}
 
 	@Override
 	public void enterBlock(JavaParser.BlockContext ctx) {
-		variables.push(new HashSet<>());
+		onVariableContextStart();
 	}
 
 	@Override
 	public void exitBlock(JavaParser.BlockContext ctx) {
+		onVariableContextEnd();
+	}
+
+	private void onVariableContextStart() {
+		variables.push(new HashSet<>());
+	}
+
+	private void onVariableContextEnd() {
 		variables.pop();
 	}
 
@@ -297,6 +345,9 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 					: toReferencedTypeOrNull(typeCandidate);
 
 		}
+		if (isVariable(typeOrPackageOrNull.getText())) {
+			return null;
+		}
 		if (startsWithUpper(typeOrPackageOrNull)) {
 			return toReferencedTypeOrNull(firstExpression.expression(), typeOrPackageOrNull);
 		}
@@ -358,6 +409,9 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		if (isImported(typeNameCandidate)) {
 			return null;
 		}
+		if (typeNameCandidate.equals(typeName)) {
+			return null;
+		}
 		return (isJavaLangType(typeNameCandidate))
 				? ReferencedType.of(JAVA_LANG_PACKAGE, typeNameCandidate)
 				: ReferencedType.of(packageName, typeNameCandidate);
@@ -365,5 +419,13 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	public Set<String> getTypes() {
 		return types.stream().map(ReferencedType::getQualifiedName).collect(Collectors.toSet());
+	}
+
+	public TypeReport createReport() {
+		return TypeReport.builder()
+				.name(typeName)
+				.packageDeclaration(packageName)
+				.referencedTypes(unmodifiableSet(types))
+				.build();
 	}
 }

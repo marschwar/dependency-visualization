@@ -117,4 +117,31 @@ class ReferencedTypesListenerTest {
 				"java.util.Map"
 		);
 	}
+
+	@Test
+	void testEnums() {
+		Parsers.parse("/Enums.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"java.lang.String"
+		);
+	}
+
+	@Test
+	void testIgnoreSelf() {
+		Parsers.parse("/IgnoreSelf.java", underTest);
+
+		assertThat(underTest.getTypes()).isEmpty();
+	}
+
+	@Test
+	void testConstants() {
+		Parsers.parse("/Constants.java", underTest);
+
+		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"java.lang.String",
+				"java.util.List",
+				"java.util.Arrays"
+		);
+	}
 }

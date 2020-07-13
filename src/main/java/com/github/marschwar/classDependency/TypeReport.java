@@ -6,7 +6,7 @@ import lombok.Value;
 import java.util.Set;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class TypeReport implements Filterable {
 	PackageDeclaration packageDeclaration;
 	String name;
