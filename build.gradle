@@ -1,6 +1,7 @@
 buildscript {
     ext {
         antlr_version = '4.7.2'
+        picocli_version = '4.4.0'
     }
 }
 
@@ -22,6 +23,7 @@ repositories {
 
 dependencies {
     antlr "org.antlr:antlr4:$antlr_version"
+    implementation "info.picocli:picocli:$picocli_version"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
@@ -29,9 +31,7 @@ dependencies {
 }
 
 sourceSets {
-    main {
-        java.srcDirs += 'build/generated/sources/antlr/main/java'
-    }
+    main.java.srcDirs += 'build/generated/sources/antlr/main/java'
 }
 
 test {
