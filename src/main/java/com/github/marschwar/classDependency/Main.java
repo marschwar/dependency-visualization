@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.function.BiPredicate;
 
 public class Main {
 
@@ -31,10 +29,5 @@ public class Main {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	private static BiPredicate<Path, BasicFileAttributes> filter() {
-		return (path, basicFileAttributes) -> basicFileAttributes.isRegularFile()
-				&& path.getFileName().toString().endsWith(".java");
 	}
 }
