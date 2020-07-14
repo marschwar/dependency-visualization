@@ -28,4 +28,9 @@ public class ReferencedType implements Filterable, Comparable<ReferencedType> {
 	public int compareTo(ReferencedType other) {
 		return getQualifiedName().compareTo(other.getQualifiedName());
 	}
+
+	@Override
+	public String toString() {
+		return getQualifiedName();
+	}
 }
