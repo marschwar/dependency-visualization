@@ -27,6 +27,10 @@ public class Main {
 					.filters(Filters.builder()
 							.include("de\\.hermes\\.delta\\.service.*")
 							.exclude("de\\.hermes\\.delta\\.service\\.ServiceFactory")
+							.exclude("de\\.hermes\\.delta\\.service\\.LogService")
+							.exclude("de\\.hermes\\.delta\\.service.*\\.Result")
+							.exclude("de\\.hermes\\.delta\\.service\\.SVG")
+							.exclude("de\\.hermes\\.delta\\.service\\.JPEG")
 							.build())
 					.sources(sourceFiles)
 					.build();
