@@ -16,14 +16,13 @@ import com.github.marschwar.classDependency.parser.JavaParserBaseListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.unmodifiableSet;
 
 public class ReferencedTypesListener extends JavaParserBaseListener {
 
@@ -417,7 +416,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 				: ReferencedType.of(packageName, typeNameCandidate);
 	}
 
-	public Set<String> getTypes() {
+	Set<String> getTypes() {
 		return types.stream().map(ReferencedType::getQualifiedName).collect(Collectors.toSet());
 	}
 
@@ -425,7 +424,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		return TypeReport.builder()
 				.name(typeName)
 				.packageDeclaration(packageName)
-				.referencedTypes(unmodifiableSet(types))
+				.referencedTypes(new ArrayList<>(types))
 				.build();
 	}
 }

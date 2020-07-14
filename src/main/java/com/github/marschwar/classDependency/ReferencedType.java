@@ -5,7 +5,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ReferencedType implements Filterable {
+public class ReferencedType implements Filterable, Comparable<ReferencedType> {
 	PackageDeclaration packageDeclaration;
 	String name;
 
@@ -22,5 +22,10 @@ public class ReferencedType implements Filterable {
 
 	public String getQualifiedName() {
 		return packageDeclaration.getPackageName() + "." + name;
+	}
+
+	@Override
+	public int compareTo(ReferencedType other) {
+		return getQualifiedName().compareTo(other.getQualifiedName());
 	}
 }

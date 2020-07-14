@@ -1,6 +1,12 @@
 package com.github.marschwar.classDependency;
 
+import com.github.marschwar.classDependency.cytoscape.CytoscapeReportTransformer;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,7 +30,12 @@ public class Main {
 							.build())
 					.sources(sourceFiles)
 					.build();
-			generator.generate();
+			final Report report = generator.generate();
+
+			try (Writer writer = new BufferedWriter(new FileWriter("/tmp/deps.html"))) {
+				new CytoscapeReportTransformer().transform(report, writer);
+			}
+
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

@@ -1,0 +1,81 @@
+<!DOCTYPE>
+
+<html lang="en">
+
+<head>
+    <title>Edge Demo</title>
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+
+    <style>
+        body {
+            font-family: helvetica neue, helvetica, liberation sans, arial, sans-serif;
+            font-size: 14px;
+        }
+
+        #cy {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        h1 {
+            opacity: 0.5;
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const cy = window.cy = cytoscape({
+                container: document.getElementById('cy'),
+
+                layout: {
+                    name: 'concentric',
+                    minNodeSpacing: 100
+                },
+
+                style: [
+                    {
+                        selector: 'node[name]',
+                        style: {
+                            'content': 'data(name)'
+                        }
+                    },
+
+                    {
+                        selector: 'edge',
+                        style: {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle'
+                        }
+                    },
+                ],
+
+                /*ELEMENTS_PLACEHOLDER*/
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+<h1>Demo</h1>
+
+<div id="cy"></div>
+
+
+<!--<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>-->
+
+<!-- for testing with local version of cytoscape.js -->
+<script src="./cytoscape.umd.js"></script>
+
+</body>
+
+</html>

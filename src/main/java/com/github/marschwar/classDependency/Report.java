@@ -7,7 +7,6 @@ import java.util.List;
 
 @Value
 @Builder
-public class Node {
-	String source;
-	List<String> targets;
+public class Report {
+	List<TypeReport> types;
 }
