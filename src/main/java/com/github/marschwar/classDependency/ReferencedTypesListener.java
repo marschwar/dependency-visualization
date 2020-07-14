@@ -390,7 +390,11 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 				? packageName
 				: new PackageDeclaration(String.join(DOT, packageNodes));
 
-		return ReferencedType.of(thePackageName, typeNodes.get(0));
+		final String outerMostType = typeNodes.get(0);
+		if (isImported(outerMostType)) {
+			return null;
+		}
+		return ReferencedType.of(thePackageName, outerMostType);
 	}
 
 	private boolean startsWithLower(ParseTree hasText) {

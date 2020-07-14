@@ -1,6 +1,7 @@
 package foo;
 
 import java.util.function.Supplier;
+import bar.Outer;
 
 public class Creators {
 
@@ -12,5 +13,7 @@ public class Creators {
 		Supplier s1 = D::new;
 		Supplier s2 = bar.E::new;
 		Supplier s3 = String::new;
+
+		Outer.Inner inner = new Outer.Inner();
 	}
 }

@@ -58,6 +58,7 @@ class ReferencedTypesListenerTest {
 		Parsers.parse("/Creators.java", underTest);
 
 		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"bar.Outer",
 				"java.util.function.Supplier",
 				"java.lang.String",
 				"foo.A",
