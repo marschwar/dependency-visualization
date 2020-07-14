@@ -404,6 +404,9 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		if (isImported(typeNameCandidate)) {
 			return null;
 		}
+		if (isVariable(typeNameCandidate)) {
+			return null;
+		}
 		if (localTypes.contains(typeNameCandidate)) {
 			return null;
 		}
