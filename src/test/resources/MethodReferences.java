@@ -1,5 +1,7 @@
 package foo;
 
+import bar.Other.Inner;
+import bar.Other.Inner.CONSTANT;
 
 public class MethodReferences {
 
@@ -20,6 +22,6 @@ public class MethodReferences {
 	}
 
 	private void ignoreLocal() {
-
+		Inner.getString(CONSTANT);
 	}
 }

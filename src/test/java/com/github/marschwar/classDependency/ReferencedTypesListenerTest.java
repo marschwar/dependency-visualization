@@ -31,6 +31,7 @@ class ReferencedTypesListenerTest {
 		Parsers.parse("/MethodReferences.java", underTest);
 
 		assertThat(underTest.getTypes()).containsExactlyInAnyOrder(
+				"bar.Other",
 				"foo.A",
 				"bar.B",
 				"foo.C",

@@ -154,7 +154,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	private final Set<ReferencedType> types = new HashSet<>();
 	private final Stack<Set<String>> variables = new Stack<>();
-	private final Set<ReferencedType> imports = new HashSet<>();
+	private final Set<String> imports = new HashSet<>();
 
 	@Override
 	public void enterPackageDeclaration(PackageDeclarationContext ctx) {
@@ -240,10 +240,12 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 			nodes = nodes.subList(0, nodes.size() - 1);
 		}
 		final ReferencedType typeOrNull = toReferencedTypeOrNull(nodes);
-		if (typeOrNull != null) {
-			types.add(typeOrNull);
-			imports.add(typeOrNull);
-		}
+		addToTypes(typeOrNull);
+
+		nodes.stream()
+				.filter(this::startsWithUpper)
+				.map(TerminalNode::getText)
+				.forEach(imports::add);
 	}
 
 	@Override
@@ -310,7 +312,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	}
 
 	private boolean isImported(String name) {
-		return imports.stream().anyMatch(anImport -> anImport.getName().equals(name));
+		return imports.contains(name);
 	}
 
 	private boolean isJavaLangType(String name) {
