@@ -144,4 +144,11 @@ class ReferencedTypesListenerTest {
 				"java.util.Arrays"
 		);
 	}
+
+	@Test
+	void testIgnoreInner() {
+		Parsers.parse("/IgnoreInner.java", underTest);
+
+		assertThat(underTest.getTypes()).isEmpty();
+	}
 }

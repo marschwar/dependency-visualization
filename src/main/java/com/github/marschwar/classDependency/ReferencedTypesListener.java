@@ -150,6 +150,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	private PackageDeclaration packageName;
 	private String typeName;
+	private Set<String> localTypes = new HashSet<>();
 
 	private final Set<ReferencedType> types = new HashSet<>();
 	private final Stack<Set<String>> variables = new Stack<>();
@@ -160,9 +161,10 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		packageName = new PackageDeclaration(ctx.qualifiedName().getText());
 	}
 
+
 	@Override
 	public void enterClassDeclaration(ClassDeclarationContext ctx) {
-		onTypeName(ctx.IDENTIFIER().getText());
+		onLocalTypeName(ctx.IDENTIFIER());
 		onVariableContextStart();
 	}
 
@@ -173,7 +175,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	@Override
 	public void enterInterfaceDeclaration(InterfaceDeclarationContext ctx) {
-		onTypeName(ctx.IDENTIFIER().getText());
+		onLocalTypeName(ctx.IDENTIFIER());
 		onVariableContextStart();
 	}
 
@@ -184,7 +186,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 
 	@Override
 	public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
-		onTypeName(ctx.IDENTIFIER().getText());
+		onLocalTypeName(ctx.IDENTIFIER());
 		onVariableContextStart();
 	}
 
@@ -193,11 +195,13 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		onVariableContextEnd();
 	}
 
-	private void onTypeName(String classOrInterfaceName) {
-		if (typeName != null) {
-			return;
+	private void onLocalTypeName(TerminalNode classOrInterface) {
+		String classOrInterfaceName = classOrInterface.getText();
+		if (typeName == null) {
+			typeName = classOrInterfaceName;
 		}
-		typeName = classOrInterfaceName;
+		localTypes.add(classOrInterfaceName);
+		types.remove(ReferencedType.of(packageName, classOrInterfaceName));
 	}
 
 	@Override
@@ -248,9 +252,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 			return;
 		}
 		final ReferencedType typeOrNull = toReferencedTypeOrNull(ctx.IDENTIFIER());
-		if (typeOrNull != null) {
-			types.add(typeOrNull);
-		}
+		addToTypes(typeOrNull);
 	}
 
 	@Override
@@ -259,9 +261,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		final ExpressionContext expression = ctx.expression();
 		if (expression != null) {
 			final ReferencedType referencedTypeOrNull = toReferencedTypeOrNull(expression);
-			if (referencedTypeOrNull != null) {
-				types.add(referencedTypeOrNull);
-			}
+			addToTypes(referencedTypeOrNull);
 		}
 	}
 
@@ -269,9 +269,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 	public void enterMethodCall(MethodCallContext ctx) {
 		final ExpressionContext parent = (ExpressionContext) ctx.getParent();
 		final ReferencedType referencedTypeOrNull = toReferencedTypeOrNull(parent);
-		if (referencedTypeOrNull != null) {
-			types.add(referencedTypeOrNull);
-		}
+		addToTypes(referencedTypeOrNull);
 	}
 
 	@Override
@@ -298,9 +296,7 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 			return;
 		}
 		final ReferencedType typeOrNull = toReferencedTypeOrNull(classOrInterfaceType.IDENTIFIER());
-		if (typeOrNull != null) {
-			types.add(typeOrNull);
-		}
+		addToTypes(typeOrNull);
 		classOrInterfaceType.typeArguments().forEach(argsCtx -> {
 			argsCtx.typeArgument().forEach(typeArgCtx -> {
 				final TypeTypeContext parametrizedTypeType = typeArgCtx.typeType();
@@ -408,12 +404,19 @@ public class ReferencedTypesListener extends JavaParserBaseListener {
 		if (isImported(typeNameCandidate)) {
 			return null;
 		}
-		if (typeNameCandidate.equals(typeName)) {
+		if (localTypes.contains(typeNameCandidate)) {
 			return null;
 		}
 		return (isJavaLangType(typeNameCandidate))
 				? ReferencedType.of(JAVA_LANG_PACKAGE, typeNameCandidate)
 				: ReferencedType.of(packageName, typeNameCandidate);
+	}
+
+	private void addToTypes(ReferencedType referencedTypeOrNull) {
+		if (referencedTypeOrNull == null) {
+			return;
+		}
+		types.add(referencedTypeOrNull);
 	}
 
 	Set<String> getTypes() {
