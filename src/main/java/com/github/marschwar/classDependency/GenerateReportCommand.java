@@ -27,23 +27,23 @@ public class GenerateReportCommand implements Callable<Integer> {
 			description = "pattern of types to include",
 			defaultValue = ".*"
 	)
-	private String[] includes;
+	private Filter[] includes;
 	@Option(names = {"-e", "--excludes"},
 			paramLabel = "PATTERN",
 			description = "pattern of types to exclude",
 			defaultValue = "java.*"
 	)
-	private String[] excludes;
+	private Filter[] excludes;
 
 	@Override
 	public Integer call() throws Exception {
 
 		Logger logger = new StdoutLogger();
 		FiltersBuilder filterBuilder = Filters.builder();
-		for (String pattern : includes) {
+		for (Filter pattern : includes) {
 			filterBuilder = filterBuilder.include(pattern);
 		}
-		for (String pattern : excludes) {
+		for (Filter pattern : excludes) {
 			filterBuilder = filterBuilder.exclude(pattern);
 		}
 		final ReportGenerator generator = ReportGenerator.builder()

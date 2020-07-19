@@ -43,12 +43,22 @@ public class Filters {
 		private final List<Filter> excludes = new ArrayList<>();
 
 		public FiltersBuilder include(String pattern) {
-			includes.add(Filter.of(pattern));
+			include(Filter.of(pattern));
+			return this;
+		}
+
+		public FiltersBuilder include(Filter filter) {
+			includes.add(filter);
 			return this;
 		}
 
 		public FiltersBuilder exclude(String pattern) {
-			excludes.add(Filter.of(pattern));
+			exclude(Filter.of(pattern));
+			return this;
+		}
+
+		public FiltersBuilder exclude(Filter filter) {
+			excludes.add(filter);
 			return this;
 		}
 
