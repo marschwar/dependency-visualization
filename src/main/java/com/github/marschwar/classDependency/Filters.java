@@ -29,6 +29,10 @@ public class Filters {
 		return excludes.stream().noneMatch(filter -> filter.matches(item));
 	}
 
+	@Override
+	public String toString() {
+		return "includes=" + includes + ", excludes=" + excludes;
+	}
 
 	public static FiltersBuilder builder() {
 		return new FiltersBuilder();

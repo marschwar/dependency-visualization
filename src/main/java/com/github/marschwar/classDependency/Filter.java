@@ -16,4 +16,9 @@ public class Filter {
 	public boolean matches(Filterable source) {
 		return pattern.matcher(source.getQualifiedName()).matches();
 	}
+
+	@Override
+	public String toString() {
+		return pattern.toString();
+	}
 }

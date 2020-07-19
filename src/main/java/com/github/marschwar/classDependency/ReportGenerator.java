@@ -2,6 +2,8 @@ package com.github.marschwar.classDependency;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,8 +22,9 @@ public class ReportGenerator {
 
 	Path sourcePath;
 	Filters filters;
+	Logger logger;
 
-	public Report generate() {
+	public Report generate()  {
 		try {
 			return runJdepAndCreateReport();
 		} catch (IOException e) {
@@ -30,10 +33,12 @@ public class ReportGenerator {
 	}
 
 	private Report runJdepAndCreateReport() throws IOException {
+		final Path absolutePath = sourcePath.toAbsolutePath();
+		logger.info("generating report for "+ absolutePath + " using filters " + filters);
 		final Process process = Runtime.getRuntime().exec(new String[]{
 				"jdeps",
 				"-verbose",
-				sourcePath.toAbsolutePath().toString()
+				absolutePath.toString()
 		});
 		final JdepsOutputParser parser = new JdepsOutputParser();
 		final Set<ClassDependency> dependencies = new HashSet<>();
@@ -71,7 +76,7 @@ public class ReportGenerator {
 
 		try {
 			final int exitCode = process.waitFor();
-			System.out.println("jdeps finished with exitCode " + exitCode);
+			logger.info("jdeps finished with exitCode " + exitCode);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
