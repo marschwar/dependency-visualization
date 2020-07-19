@@ -55,15 +55,14 @@ public class CytoscapeReportTransformer implements ReportTransformer {
 		List<Node> nodes = new ArrayList<>();
 		List<Edge> edges = new ArrayList<>();
 
-		report.getTypes().forEach(typeReport -> {
-			final String typeId = typeReport.getQualifiedName();
-			nodes.add(Node.of(typeId, typeReport.getName()));
-			edges.addAll(typeReport.getReferencedTypes().stream()
-					.map(referencedType -> Edge.of(typeId, referencedType.getQualifiedName()))
-					.collect(Collectors.toList()));
+		report.getDependencies().forEach(dep -> {
+			nodes.add(Node.of(dep.getSource().getQualifiedName(), dep.getSource().getName()));
+			nodes.add(Node.of(dep.getTarget().getQualifiedName(), dep.getTarget().getName()));
+			edges.add(Edge.of(dep.getSource().getQualifiedName(), dep.getTarget().getQualifiedName()));
 		});
+
 		return Elements.builder()
-				.nodes(nodes)
+				.nodes(nodes.stream().distinct().collect(Collectors.toList()))
 				.edges(edges)
 				.build();
 	}

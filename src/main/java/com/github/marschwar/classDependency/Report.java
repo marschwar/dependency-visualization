@@ -8,5 +8,5 @@ import java.util.List;
 @Value
 @Builder
 public class Report {
-	List<TypeReport> types;
+	List<ClassDependency> dependencies;
 }
