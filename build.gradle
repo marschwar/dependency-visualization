@@ -1,7 +1,7 @@
 buildscript {
     ext {
         jcommander_version = '1.78'
-        gson_version = '2.8.6'
+        jsonio_version = '4.12.0'
     }
 }
 
@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
     implementation "com.beust:jcommander:$jcommander_version"
-    implementation "com.google.code.gson:gson:$gson_version"
+    implementation "com.cedarsoftware:json-io:$jsonio_version"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
