@@ -7,11 +7,10 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
@@ -68,7 +67,7 @@ public class GenerateReportCommand implements Callable<Integer> {
 		}
 
 		final ReportTransformer transformer = createTransformer();
-		try (Writer writer = new BufferedWriter(getOutputWriter(transformer.getFileExtension()))) {
+		try (Writer writer = getOutputWriter(transformer.getFileExtension())) {
 			transformer.transform(report, writer);
 		} catch (IOException e) {
 			logger.error("Error writing report", e);
@@ -81,14 +80,13 @@ public class GenerateReportCommand implements Callable<Integer> {
 		return new CytoscapeReportTransformer();
 	}
 
-	private Writer getOutputWriter(String extension) throws IOException {
+	private BufferedWriter getOutputWriter(String extension) throws IOException {
 		if (outputDir == null) {
-			return new OutputStreamWriter(System.out);
+			return new BufferedWriter(new OutputStreamWriter(System.out));
 		}
 
-		final File targetDir = outputDir.toFile();
-		targetDir.mkdirs();
-		final File targetFile = new File(targetDir, "classDependencies." + extension);
-		return new FileWriter(targetFile);
+		Files.createDirectories(outputDir);
+		final Path targetPath = outputDir.resolve("classDependencies." + extension);
+		return Files.newBufferedWriter(targetPath);
 	}
 }
