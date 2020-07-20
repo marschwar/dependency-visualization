@@ -7,8 +7,10 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
@@ -21,6 +23,12 @@ public class GenerateReportCommand implements Callable<Integer> {
 			arity = "1",
 			description = "can be a pathname to a .class file, a directory, a JAR file")
 	private Path path;
+
+	@Option(
+			names = {"-o", "--output-dir"},
+			paramLabel = "DIR",
+			description = "the path of the output directory")
+	private Path outputDir;
 
 	@Option(names = {"-i", "--includes"},
 			paramLabel = "PATTERN",
@@ -51,21 +59,31 @@ public class GenerateReportCommand implements Callable<Integer> {
 				.sourcePath(path)
 				.logger(logger)
 				.build();
-		Report report;
+		final Report report;
 		try {
 			report = generator.generate();
-		} catch (Exception e) {
+		} catch (ReportGenerationException e) {
 			logger.error("Error generating report", e);
 			return 1;
 		}
 
-		try (Writer writer = new BufferedWriter(new FileWriter("/tmp/deps.html"))) {
+		try (Writer writer = new BufferedWriter(getOutputWriter())) {
 			new CytoscapeReportTransformer().transform(report, writer);
 		} catch (IOException e) {
-			System.err.println("Error writing report");
-			e.printStackTrace();
+			logger.error("Error writing report", e);
 			return 1;
 		}
 		return 0;
+	}
+
+	private Writer getOutputWriter() throws IOException {
+		if (outputDir == null) {
+			return new OutputStreamWriter(System.out);
+		}
+
+		final File targetDir = outputDir.toFile();
+		targetDir.mkdirs();
+		final File targetFile = new File(targetDir, "classDependencies.html");
+		return new FileWriter(targetFile);
 	}
 }
