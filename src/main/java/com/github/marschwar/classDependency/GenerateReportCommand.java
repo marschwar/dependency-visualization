@@ -67,8 +67,9 @@ public class GenerateReportCommand implements Callable<Integer> {
 			return 1;
 		}
 
-		try (Writer writer = new BufferedWriter(getOutputWriter())) {
-			new CytoscapeReportTransformer().transform(report, writer);
+		final ReportTransformer transformer = createTransformer();
+		try (Writer writer = new BufferedWriter(getOutputWriter(transformer.getFileExtension()))) {
+			transformer.transform(report, writer);
 		} catch (IOException e) {
 			logger.error("Error writing report", e);
 			return 1;
@@ -76,14 +77,18 @@ public class GenerateReportCommand implements Callable<Integer> {
 		return 0;
 	}
 
-	private Writer getOutputWriter() throws IOException {
+	private ReportTransformer createTransformer() {
+		return new CytoscapeReportTransformer();
+	}
+
+	private Writer getOutputWriter(String extension) throws IOException {
 		if (outputDir == null) {
 			return new OutputStreamWriter(System.out);
 		}
 
 		final File targetDir = outputDir.toFile();
 		targetDir.mkdirs();
-		final File targetFile = new File(targetDir, "classDependencies.html");
+		final File targetFile = new File(targetDir, "classDependencies." + extension);
 		return new FileWriter(targetFile);
 	}
 }

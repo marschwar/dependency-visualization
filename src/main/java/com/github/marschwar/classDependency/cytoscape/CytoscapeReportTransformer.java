@@ -45,6 +45,11 @@ public class CytoscapeReportTransformer implements ReportTransformer {
 
 	}
 
+	@Override
+	public String getFileExtension() {
+		return "html";
+	}
+
 	private BufferedReader openTemplateReader() {
 		final InputStream resourceAsStream = getClass().getResourceAsStream(TEMPLATE_RESOURCE);
 		Objects.requireNonNull(resourceAsStream);
