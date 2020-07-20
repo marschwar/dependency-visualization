@@ -52,6 +52,11 @@ public class Filters {
 			return this;
 		}
 
+		public FiltersBuilder include(Collection<Filter> filter) {
+			includes.addAll(filter);
+			return this;
+		}
+
 		public FiltersBuilder exclude(String pattern) {
 			exclude(Filter.of(pattern));
 			return this;
@@ -59,6 +64,11 @@ public class Filters {
 
 		public FiltersBuilder exclude(Filter filter) {
 			excludes.add(filter);
+			return this;
+		}
+
+		public FiltersBuilder exclude(Collection<Filter> filter) {
+			excludes.addAll(filter);
 			return this;
 		}
 

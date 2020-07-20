@@ -3,7 +3,6 @@ package com.github.marschwar.classDependency;
 import com.beust.jcommander.IDefaultProvider;
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
-import com.github.marschwar.classDependency.Filters.FiltersBuilder;
 import com.github.marschwar.classDependency.cytoscape.CytoscapeReportTransformer;
 
 import java.io.BufferedWriter;
@@ -44,15 +43,13 @@ public class GenerateReportCommand implements IDefaultProvider {
 	public void execute() throws ReportGenerationException {
 
 		Logger logger = new StdoutLogger();
-		FiltersBuilder filterBuilder = Filters.builder();
-		for (Filter pattern : includes) {
-			filterBuilder = filterBuilder.include(pattern);
-		}
-		for (Filter pattern : excludes) {
-			filterBuilder = filterBuilder.exclude(pattern);
-		}
+		Filters filters = Filters.builder()
+				.include(includes)
+				.exclude(excludes)
+				.build();
+
 		final ReportGenerator generator = ReportGenerator.builder()
-				.filters(filterBuilder.build())
+				.filters(filters)
 				.sourcePath(path)
 				.logger(logger)
 				.build();
