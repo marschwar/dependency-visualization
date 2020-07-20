@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        picocli_version = '4.4.0'
+        jcommander_version = '1.78'
         gson_version = '2.8.6'
     }
 }
@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation "info.picocli:picocli:$picocli_version"
+    implementation "com.beust:jcommander:$jcommander_version"
     implementation "com.google.code.gson:gson:$gson_version"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'

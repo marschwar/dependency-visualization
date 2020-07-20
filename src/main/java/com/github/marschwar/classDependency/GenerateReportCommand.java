@@ -1,10 +1,10 @@
 package com.github.marschwar.classDependency;
 
+import com.beust.jcommander.IDefaultProvider;
+import com.beust.jcommander.IStringConverter;
+import com.beust.jcommander.Parameter;
 import com.github.marschwar.classDependency.Filters.FiltersBuilder;
 import com.github.marschwar.classDependency.cytoscape.CytoscapeReportTransformer;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,38 +12,36 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
+import java.nio.file.Paths;
+import java.util.List;
 
-@Command
-public class GenerateReportCommand implements Callable<Integer> {
+public class GenerateReportCommand implements IDefaultProvider {
 
-	@Parameters(
-			paramLabel = "path",
-			arity = "1",
-			description = "can be a pathname to a .class file, a directory, a JAR file")
+	@Parameter(
+			description = "can be a pathname to a .class file, a directory, a JAR file",
+			converter = PathConverter.class,
+			required = true
+	)
 	private Path path;
 
-	@Option(
-			names = {"-o", "--output-dir"},
-			paramLabel = "DIR",
+	@Parameter(names = {"-o", "--output-dir"},
+			converter = PathConverter.class,
 			description = "the path of the output directory")
 	private Path outputDir;
 
-	@Option(names = {"-i", "--includes"},
-			paramLabel = "PATTERN",
-			description = "pattern of types to include",
-			defaultValue = ".*"
+	@Parameter(names = {"--includes", "-i"},
+			converter = FilterConverter.class,
+			description = "pattern of types to include"
 	)
-	private Filter[] includes;
-	@Option(names = {"-e", "--excludes"},
-			paramLabel = "PATTERN",
-			description = "pattern of types to exclude",
-			defaultValue = "java.*"
-	)
-	private Filter[] excludes;
+	private List<Filter> includes;
 
-	@Override
-	public Integer call() throws Exception {
+	@Parameter(names = {"--excludes", "-e"},
+			converter = FilterConverter.class,
+			description = "pattern of types to exclude"
+	)
+	private List<Filter> excludes;
+
+	public void execute() throws ReportGenerationException {
 
 		Logger logger = new StdoutLogger();
 		FiltersBuilder filterBuilder = Filters.builder();
@@ -59,21 +57,14 @@ public class GenerateReportCommand implements Callable<Integer> {
 				.logger(logger)
 				.build();
 		final Report report;
-		try {
-			report = generator.generate();
-		} catch (ReportGenerationException e) {
-			logger.error("Error generating report", e);
-			return 1;
-		}
+		report = generator.generate();
 
 		final ReportTransformer transformer = createTransformer();
 		try (Writer writer = getOutputWriter(transformer.getFileExtension())) {
 			transformer.transform(report, writer);
 		} catch (IOException e) {
-			logger.error("Error writing report", e);
-			return 1;
+			throw new ReportGenerationException("Error writing report", e);
 		}
-		return 0;
 	}
 
 	private ReportTransformer createTransformer() {
@@ -88,5 +79,31 @@ public class GenerateReportCommand implements Callable<Integer> {
 		Files.createDirectories(outputDir);
 		final Path targetPath = outputDir.resolve("classDependencies." + extension);
 		return Files.newBufferedWriter(targetPath);
+	}
+
+	@Override
+	public String getDefaultValueFor(String optionName) {
+		switch (optionName) {
+			case "--includes":
+				return ".*";
+			case "--excludes":
+				return "java.*";
+			default:
+				return null;
+		}
+	}
+
+	private static class PathConverter implements IStringConverter<Path> {
+		@Override
+		public Path convert(String value) {
+			return Paths.get(value);
+		}
+	}
+
+	private static class FilterConverter implements IStringConverter<Filter> {
+		@Override
+		public Filter convert(String value) {
+			return Filter.of(value);
+		}
 	}
 }
