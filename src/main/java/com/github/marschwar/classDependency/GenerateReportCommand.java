@@ -45,6 +45,11 @@ public class GenerateReportCommand implements IDefaultProvider {
 	)
 	private boolean cyclesOnly;
 
+	@Parameter(names = {"--show-self-references"},
+			description = "by default self references are not shown"
+	)
+	private boolean selfReferences;
+
 	public void execute() throws ReportGenerationException {
 
 		Logger logger = new StdoutLogger();
@@ -57,6 +62,7 @@ public class GenerateReportCommand implements IDefaultProvider {
 				.sourcePath(path)
 				.filters(filters)
 				.cyclesOnly(cyclesOnly)
+				.showSelfReferences(selfReferences)
 				.logger(logger)
 				.build();
 		final Report report;

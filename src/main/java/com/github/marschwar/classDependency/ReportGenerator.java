@@ -18,6 +18,7 @@ public class ReportGenerator {
 	Logger logger;
 	Filters filters;
 	boolean cyclesOnly;
+	boolean showSelfReferences;
 
 	public Report generate() throws ReportGenerationException {
 		return extractDependenciesAndCreateReport();
@@ -28,15 +29,17 @@ public class ReportGenerator {
 		final Set<ClassDependency> dependencies = extractor.extractDependencies(sourcePath);
 
 		final Set<ClassDependency> filteredDependencies = dependencies.stream()
-				.filter(classDependency ->
-						filters.isIncluded(classDependency.getSource())
-								&& filters.isIncluded(classDependency.getTarget())
+				.filter(it ->
+						filters.isIncluded(it.getSource())
+								&& filters.isIncluded(it.getTarget())
 				)
+				.filter(it -> showSelfReferences
+						|| !it.getSource().equals(it.getTarget()))
 				.collect(Collectors.toSet());
 
 		final Predicate<ClassDependency> cyclesPredicate = createCyclesPredicate(filteredDependencies);
 
-		final List<ClassDependency> reportDependencies = dependencies.stream()
+		final List<ClassDependency> reportDependencies = filteredDependencies.stream()
 				.filter(cyclesPredicate)
 				.distinct()
 				.sorted()
