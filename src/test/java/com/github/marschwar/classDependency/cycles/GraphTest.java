@@ -80,4 +80,25 @@ class GraphTest {
 
 		assertThat(result).containsOnly("a", "b", "c", "e", "f");
 	}
+
+	@Test
+	public void ignoreSelfReference() {
+		final Graph graph = new GraphBuilder()
+				// first cycle
+				.addEdge("a", "b")
+				.addEdge("b", "c")
+				.addEdge("c", "a")
+
+				.addEdge("c", "d")
+				.addEdge("d", "e")
+
+				// self reference
+				.addEdge("d", "d")
+
+				.build();
+
+		final Set<String> result = graph.detectCycles();
+
+		assertThat(result).containsOnly("a", "b", "c");
+	}
 }

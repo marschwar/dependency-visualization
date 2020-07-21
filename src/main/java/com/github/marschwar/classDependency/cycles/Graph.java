@@ -41,6 +41,10 @@ public class Graph {
 
 		final int index = path.indexOf(vertex.getId());
 		if (index > -1) {
+			if (index == path.size() - 1) {
+				// self reference
+				return emptySet();
+			}
 			return path.subList(index, path.size());
 		}
 

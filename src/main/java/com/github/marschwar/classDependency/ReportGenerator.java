@@ -1,11 +1,13 @@
 package com.github.marschwar.classDependency;
 
+import com.github.marschwar.classDependency.cycles.Graph.GraphBuilder;
 import lombok.Builder;
 import lombok.Value;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Value
@@ -13,8 +15,9 @@ import java.util.stream.Collectors;
 public class ReportGenerator {
 
 	Path sourcePath;
-	Filters filters;
 	Logger logger;
+	Filters filters;
+	boolean cyclesOnly;
 
 	public Report generate() throws ReportGenerationException {
 		return extractDependenciesAndCreateReport();
@@ -24,16 +27,44 @@ public class ReportGenerator {
 		final ClassDependencyExtractor extractor = new ClassDependencyExtractor(logger);
 		final Set<ClassDependency> dependencies = extractor.extractDependencies(sourcePath);
 
-		final List<ClassDependency> filteredDependencies = dependencies.stream()
+		final Set<ClassDependency> filteredDependencies = dependencies.stream()
 				.filter(classDependency ->
 						filters.isIncluded(classDependency.getSource())
 								&& filters.isIncluded(classDependency.getTarget())
 				)
+				.collect(Collectors.toSet());
+
+		final Predicate<ClassDependency> cyclesPredicate = createCyclesPredicate(filteredDependencies);
+
+		final List<ClassDependency> reportDependencies = dependencies.stream()
+				.filter(cyclesPredicate)
 				.distinct()
 				.sorted()
 				.collect(Collectors.toList());
 
-		return Report.builder().dependencies(filteredDependencies).build();
+		return Report.builder()
+				.dependencies(reportDependencies)
+				.build();
 
+	}
+
+	private Predicate<ClassDependency> createCyclesPredicate(Set<ClassDependency> dependencies) {
+		if (!cyclesOnly) {
+			return (d) -> true;
+		}
+		final GraphBuilder graphBuilder = dependencies.stream()
+				.collect(
+						GraphBuilder::new,
+						(acc, it) -> acc.addEdge(
+								it.getSource().getQualifiedName(),
+								it.getTarget().getQualifiedName()),
+						(a, b) -> {
+							throw new IllegalArgumentException("cannot combine");
+						});
+		final Set<String> cycles = graphBuilder.build().detectCycles();
+
+
+		return (dep) -> cycles.contains(dep.getSource().getQualifiedName())
+				&& cycles.contains(dep.getTarget().getQualifiedName());
 	}
 }

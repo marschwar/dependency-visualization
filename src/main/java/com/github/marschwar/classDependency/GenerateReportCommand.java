@@ -40,6 +40,11 @@ public class GenerateReportCommand implements IDefaultProvider {
 	)
 	private List<Filter> excludes;
 
+	@Parameter(names = {"--cycles-only"},
+			description = "include only classes that contain cycles"
+	)
+	private boolean cyclesOnly;
+
 	public void execute() throws ReportGenerationException {
 
 		Logger logger = new StdoutLogger();
@@ -49,8 +54,9 @@ public class GenerateReportCommand implements IDefaultProvider {
 				.build();
 
 		final ReportGenerator generator = ReportGenerator.builder()
-				.filters(filters)
 				.sourcePath(path)
+				.filters(filters)
+				.cyclesOnly(cyclesOnly)
 				.logger(logger)
 				.build();
 		final Report report;
