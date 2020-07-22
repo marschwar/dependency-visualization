@@ -7,8 +7,12 @@ import com.github.marschwar.depvis.ReportTransformer;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
 
 public class DotReportTransformer implements ReportTransformer {
+	private static final List<String> KEYWORDS = Arrays.asList("node", "edge", "graph", "digraph", "subgraph", "strict");
+
 	@Override
 	public void transform(Report report, Writer writer) throws IOException {
 		writer.write("digraph dependency_graph\n");
@@ -17,7 +21,7 @@ public class DotReportTransformer implements ReportTransformer {
 			writer.write(
 					String.format("\t\"%s\" [label=%s];\n",
 							node.getQualifiedName(),
-							node.getName())
+							getLabel(node))
 			);
 		}
 		writer.write("\n");
@@ -30,6 +34,14 @@ public class DotReportTransformer implements ReportTransformer {
 		}
 		writer.write("}\n");
 
+	}
+
+	private String getLabel(ReferencedType node) {
+		final String name = node.getName();
+		if (KEYWORDS.contains(name.toLowerCase())) {
+			return name + "_";
+		}
+		return name;
 	}
 
 	@Override
