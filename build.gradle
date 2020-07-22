@@ -42,4 +42,4 @@ jar {
     }
 }
 
-tasks.build.dependsOn tasks.shadowJar
+tasks.assemble.dependsOn tasks.shadowJar

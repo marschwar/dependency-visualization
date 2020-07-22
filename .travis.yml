@@ -18,7 +18,8 @@ matrix:
       osx_image: xcode10.2
 
 script:
-  - "./gradlew check --info"
+  - "./gradlew assemble -PwarningsAsErrors=true"
+  - "./gradlew check"
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

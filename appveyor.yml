@@ -27,10 +27,10 @@ install:
   - gradlew.bat --version
 
 build_script:
-  - gradlew assemble --build-cache -PwarningsAsErrors=true
+  - gradlew assemble -PwarningsAsErrors=true
 
 test_script:
-  - gradlew test
+  - gradlew check
 
 after_test:
   - ps: del C:\Users\appveyor\.gradle\caches\modules-2\modules-2.lock
