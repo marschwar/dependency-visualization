@@ -4,7 +4,4 @@
 **/out/
 !gradle/wrapper/gradle-wrapper.jar
 
-**/*.jar
-**/*.class
-
 .idea
