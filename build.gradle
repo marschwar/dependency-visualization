@@ -9,6 +9,7 @@ plugins {
     id 'java'
     id "com.github.johnrengelman.shadow" version "5.1.0"
     id "io.freefair.lombok" version "5.1.0"
+    id "com.github.spotbugs" version "3.0.0"
 }
 
 group 'com.github.marschwar.depvis'
@@ -39,6 +40,17 @@ test {
 jar {
     manifest {
         attributes 'Main-Class': 'com.github.marschwar.depvis.Main'
+    }
+}
+
+spotbugs {
+    effort = 'max'
+}
+
+spotbugsMain {
+    reports {
+        html.enabled = true
+        xml.enabled = false
     }
 }
 

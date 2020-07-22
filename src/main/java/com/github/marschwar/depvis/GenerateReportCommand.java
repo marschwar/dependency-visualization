@@ -10,6 +10,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +96,7 @@ public class GenerateReportCommand implements IDefaultProvider {
 
 	private BufferedWriter getOutputWriter(String extension) throws IOException {
 		if (outputDir == null) {
-			return new BufferedWriter(new OutputStreamWriter(System.out));
+			return new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
 		}
 
 		Files.createDirectories(outputDir);

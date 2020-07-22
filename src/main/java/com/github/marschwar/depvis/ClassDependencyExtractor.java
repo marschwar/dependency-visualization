@@ -3,6 +3,7 @@ package com.github.marschwar.depvis;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,7 +43,7 @@ public class ClassDependencyExtractor {
 	private Set<ClassDependency> parseOutput(Process process) throws ReportGenerationException {
 		final JdepsOutputParser parser = new JdepsOutputParser();
 		final Set<ClassDependency> dependencies = new HashSet<>();
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
 			String line;
 			while ((line = reader.readLine()) != null) {
 				final ClassDependency dependencyOrNull = parser.parse(line);

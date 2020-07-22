@@ -19,7 +19,7 @@ public class DotReportTransformer implements ReportTransformer {
 		writer.write("{\n");
 		for (ReferencedType node : report.getNodes()) {
 			writer.write(
-					String.format("\t\"%s\" [label=%s];\n",
+					String.format("\t\"%s\" [label=%s];%n",
 							node.getQualifiedName(),
 							getLabel(node))
 			);
@@ -27,7 +27,7 @@ public class DotReportTransformer implements ReportTransformer {
 		writer.write("\n");
 		for (ClassDependency edge : report.getEdges()) {
 			writer.write(
-					String.format("\t\"%s\" -> \"%s\";\n",
+					String.format("\t\"%s\" -> \"%s\";%n",
 							edge.getSource().getQualifiedName(),
 							edge.getTarget().getQualifiedName())
 			);

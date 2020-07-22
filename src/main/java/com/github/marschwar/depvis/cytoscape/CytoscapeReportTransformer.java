@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class CytoscapeReportTransformer implements ReportTransformer {
 	private BufferedReader openTemplateReader() {
 		final InputStream resourceAsStream = getClass().getResourceAsStream(TEMPLATE_RESOURCE);
 		Objects.requireNonNull(resourceAsStream);
-		return new BufferedReader(new InputStreamReader(resourceAsStream));
+		return new BufferedReader(new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8));
 	}
 
 	private Elements convert(Report report) {
