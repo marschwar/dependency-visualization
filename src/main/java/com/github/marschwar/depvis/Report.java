@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 @Value
 @Builder
 public class Report {
+	String name;
 	List<ClassDependency> edges;
 
 	public List<ReferencedType> getNodes() {

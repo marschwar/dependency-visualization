@@ -46,6 +46,7 @@ public class ReportGenerator {
 				.collect(Collectors.toList());
 
 		return Report.builder()
+				.name("Dependency Graph")
 				.edges(reportDependencies)
 				.build();
 

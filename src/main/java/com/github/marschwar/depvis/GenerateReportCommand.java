@@ -4,6 +4,7 @@ import com.beust.jcommander.IDefaultProvider;
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 import com.github.marschwar.depvis.cytoscape.CytoscapeReportTransformer;
+import com.github.marschwar.depvis.dot.DotReportTransformer;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,15 +31,21 @@ public class GenerateReportCommand implements IDefaultProvider {
 
 	@Parameter(names = {"--includes", "-i"},
 			converter = FilterConverter.class,
-			description = "pattern of types to include"
+			description = "pattern of types to include. Default: \".*\""
 	)
 	private List<Filter> includes;
 
 	@Parameter(names = {"--excludes", "-e"},
 			converter = FilterConverter.class,
-			description = "pattern of types to exclude"
+			description = "pattern of types to exclude. Default: \"java.*\""
 	)
 	private List<Filter> excludes;
+
+	@Parameter(names = {"--format", "-f"},
+			converter = FormatConverter.class,
+			description = "output format. One of cytoscape_js|dot. Default: cytoscape_js"
+	)
+	private Format format;
 
 	@Parameter(names = {"--cycles-only"},
 			description = "include only classes that contain cycles"
@@ -77,7 +84,13 @@ public class GenerateReportCommand implements IDefaultProvider {
 	}
 
 	private ReportTransformer createTransformer() {
-		return new CytoscapeReportTransformer();
+		switch (format) {
+			case CYTOSCAPE_JS:
+				return new CytoscapeReportTransformer();
+			case DOT:
+				return new DotReportTransformer();
+		}
+		throw new IllegalArgumentException("Transformer missing for format " + format);
 	}
 
 	private BufferedWriter getOutputWriter(String extension) throws IOException {
@@ -86,7 +99,7 @@ public class GenerateReportCommand implements IDefaultProvider {
 		}
 
 		Files.createDirectories(outputDir);
-		final Path targetPath = outputDir.resolve("classDependencies." + extension);
+		final Path targetPath = outputDir.resolve("dependency-graph." + extension);
 		return Files.newBufferedWriter(targetPath);
 	}
 
@@ -97,6 +110,8 @@ public class GenerateReportCommand implements IDefaultProvider {
 				return ".*";
 			case "--excludes":
 				return "java.*";
+			case "--format":
+				return Format.CYTOSCAPE_JS.name();
 			default:
 				return null;
 		}
@@ -114,5 +129,16 @@ public class GenerateReportCommand implements IDefaultProvider {
 		public Filter convert(String value) {
 			return Filter.of(value);
 		}
+	}
+
+	private static class FormatConverter implements IStringConverter<Format> {
+		@Override
+		public Format convert(String value) {
+			return Format.valueOf(value.toUpperCase());
+		}
+	}
+
+	public enum Format {
+		CYTOSCAPE_JS, DOT
 	}
 }
