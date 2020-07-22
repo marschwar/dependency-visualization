@@ -55,16 +55,14 @@ public class ReportGenerator {
 		if (!cyclesOnly) {
 			return (d) -> true;
 		}
-		final GraphBuilder graphBuilder = dependencies.stream()
-				.collect(
-						GraphBuilder::new,
-						(acc, it) -> acc.addEdge(
-								it.getSource().getQualifiedName(),
-								it.getTarget().getQualifiedName()),
-						(a, b) -> {
-							throw new IllegalArgumentException("cannot combine");
-						});
-		final Set<String> cycles = graphBuilder.build().detectCycles();
+		final GraphBuilder builder = new GraphBuilder();
+		dependencies.forEach(it ->
+				builder.addEdge(
+						it.getSource().getQualifiedName(),
+						it.getTarget().getQualifiedName()
+				)
+		);
+		final Set<String> cycles = builder.build().detectCycles();
 
 
 		return (dep) -> cycles.contains(dep.getSource().getQualifiedName())
