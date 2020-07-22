@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,14 +53,12 @@ public class CytoscapeReportTransformer implements ReportTransformer {
 	}
 
 	private Elements convert(Report report) {
-		List<Node> nodes = new ArrayList<>();
-		List<Edge> edges = new ArrayList<>();
-
-		report.getDependencies().forEach(dep -> {
-			nodes.add(Node.of(dep.getSource().getQualifiedName(), dep.getSource().getName()));
-			nodes.add(Node.of(dep.getTarget().getQualifiedName(), dep.getTarget().getName()));
-			edges.add(Edge.of(dep.getSource().getQualifiedName(), dep.getTarget().getQualifiedName()));
-		});
+		List<Node> nodes = report.getNodes().stream()
+				.map(it -> Node.of(it.getQualifiedName(), it.getName()))
+				.collect(Collectors.toList());
+		List<Edge> edges = report.getEdges().stream()
+				.map(it -> Edge.of(it.getSource().getQualifiedName(), it.getTarget().getQualifiedName()))
+				.collect(Collectors.toList());
 
 		return Elements.builder()
 				.nodes(nodes.stream().distinct().collect(Collectors.toList()))

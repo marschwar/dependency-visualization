@@ -24,7 +24,7 @@ class ClassDependencyExtractorTest {
 		assertThat(dependencies)
 				.extracting(ClassDependency::getTarget)
 				.contains(
-						ReferencedType.of("com.github.marschwar.classDependency", "Logger"),
+						ReferencedType.of("com.github.marschwar.depvis", "Logger"),
 						ReferencedType.of("java.nio.file", "Path")
 				);
 	}

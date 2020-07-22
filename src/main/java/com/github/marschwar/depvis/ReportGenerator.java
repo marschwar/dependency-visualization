@@ -46,7 +46,7 @@ public class ReportGenerator {
 				.collect(Collectors.toList());
 
 		return Report.builder()
-				.dependencies(reportDependencies)
+				.edges(reportDependencies)
 				.build();
 
 	}
