@@ -7,6 +7,8 @@ This is somewhat of a side project so do not expect frequent updates just yet.
 At a client project I needed a way to visualize dependencies between projects java classes. As I could not find
  anything I liked within 10 minutes of searching the web, I decided to create my own.
 
+![Dependency graph of the project itself](./documentation/dependency-graph.png)
+
 ## Prerequisites
 * Java 8 or higher
 * (optional) the **dot** tool from the [Graphviz](https://www.graphviz.org/) tool suite to transform generated`.dot
