@@ -57,3 +57,5 @@ Usage: <main class> [options] <directory or jar file>
 ## Thanks & Links
 * [Cytoscape](https://cytoscape.org/) and [Cytoscape.js](https://js.cytoscape.org/)
 * [Graphviz](https://www.graphviz.org/)
+* [jdeps](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/jdeps.html) - command line tool to extract
+ dependencies of java modules, packages and classes
