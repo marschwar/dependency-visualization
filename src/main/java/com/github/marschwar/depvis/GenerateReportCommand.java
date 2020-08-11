@@ -3,8 +3,10 @@ package com.github.marschwar.depvis;
 import com.beust.jcommander.IDefaultProvider;
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.github.marschwar.depvis.cytoscape.CytoscapeReportTransformer;
 import com.github.marschwar.depvis.dot.DotReportTransformer;
+import lombok.Getter;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,45 +18,65 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Parameters(commandDescription = "Generate a visualization of class dependencies")
 public class GenerateReportCommand implements IDefaultProvider {
 
+	@Getter
+	@Parameter(names = "--help", help = true, description = "Show all available options", order = 0)
+	private boolean help;
+
 	@Parameter(
-			description = "can be a pathname to a .class file, a directory, a JAR file",
+			description = "<directory or jar file>",
 			converter = PathConverter.class,
 			required = true
 	)
 	private Path path;
 
-	@Parameter(names = {"-o", "--output-dir"},
+	@Parameter(order = 1,
+			names = {"--output-dir", "-o"},
 			converter = PathConverter.class,
-			description = "the path of the output directory")
+			description = "The output directory in which to store the generated output file. " +
+					"If not specified, the output is written to STDOUT.")
 	private Path outputDir;
 
-	@Parameter(names = {"--includes", "-i"},
+	@Parameter(order = 2,
+			names = {"--includes", "-i"},
 			converter = FilterConverter.class,
-			description = "pattern of types to include. Default: \".*\""
+			description = "A regular expression pattern of types to include." +
+					"You can specify multiple patterns by repeating the -i option. " +
+					"Default: \".*\""
 	)
 	private List<Filter> includes;
 
-	@Parameter(names = {"--excludes", "-e"},
+	@Parameter(order = 3,
+			names = {"--excludes", "-e"},
 			converter = FilterConverter.class,
-			description = "pattern of types to exclude. Default: \"java.*\""
+			description = "A regular expression pattern of types to exclude. " +
+					"You can specify multiple patterns by repeating the -e option. " +
+					"Default: \"java.*\""
 	)
 	private List<Filter> excludes;
 
-	@Parameter(names = {"--format", "-f"},
+	@Parameter(order = 4,
+			names = {"--format", "-f"},
 			converter = FormatConverter.class,
-			description = "output format. One of cytoscape_js|dot. Default: cytoscape_js"
+			description = "The output format. Supported formats are:" +
+					"\n\tCYTOSCAPE_JS - html page using cytoscape.js to render the graph." +
+					"\n\tDOT - a dot file that can be transformed to other formats using the dot tool." +
+					"Default: CYTOSCAPE_JS"
 	)
 	private Format format;
 
-	@Parameter(names = {"--cycles-only"},
-			description = "include only classes that contain cycles"
+	@Parameter(order = 10,
+			names = {"--cycles-only"},
+			description = "If specified only classes that are part of a cyclic dependency are shown."
 	)
 	private boolean cyclesOnly;
 
-	@Parameter(names = {"--show-self-references"},
-			description = "by default self references are not shown"
+	@Parameter(order = 11,
+			names = {"--show-self-references"},
+			description = "If specified classes that only contain self references are shown. " +
+					"By default these are omitted."
 	)
 	private boolean selfReferences;
 

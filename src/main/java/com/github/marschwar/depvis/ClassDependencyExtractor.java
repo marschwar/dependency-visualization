@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
+// TODO: rename and add package dependencies
 public class ClassDependencyExtractor {
 	private final Logger logger;
 
@@ -33,7 +34,9 @@ public class ClassDependencyExtractor {
 
 		try {
 			final int exitCode = process.waitFor();
-			logger.info("jdeps exited with code " + exitCode);
+			if (exitCode != 0) {
+				throw new ReportGenerationException("jdeps exited with exit code " + exitCode);
+			}
 		} catch (InterruptedException e) {
 			throw new ReportGenerationException("Error running jdeps", e);
 		}

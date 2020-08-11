@@ -15,9 +15,21 @@ public class DotReportTransformer implements ReportTransformer {
 
 	@Override
 	public void transform(Report report, Writer writer) throws IOException {
-		writer.write("digraph dependency_graph\n");
-		writer.write("{\n");
+
+		writer.write("digraph dependency_graph {\n");
+		writer.write("\n");
+		writer.write("\tnode [shape=box];\n");
+		writer.write("\n");
 		for (ReferencedType node : report.getNodes()) {
+
+			// TODO: use subgraphs with different color per package
+			/*
+				subgraph {
+				node [color=blue];
+				"com.github.marschwar.depvis.dot.DotReportTransformer" [label=DotReportTransformer];
+				}
+			 */
+
 			writer.write(
 					String.format("\t\"%s\" [label=%s];%n",
 							node.getQualifiedName(),
