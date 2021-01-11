@@ -1,2 +1,10 @@
+import de.fayard.refreshVersions.RefreshVersionsSetup
+
+buildscript {
+	repositories { gradlePluginPortal() }
+	dependencies.classpath("de.fayard.refreshVersions:refreshVersions:0.9.7")
+}
+
 rootProject.name = 'depvis'
 
+RefreshVersionsSetup.bootstrap(settings)
